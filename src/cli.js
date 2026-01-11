@@ -20,18 +20,20 @@ program
     .description(description)
     .version(version)
     .argument('[path]', 'path to course directory', '.')
-    .option('-p, --port <number>', 'server port', '3000')
+    .option('-p, --port <number>', 'server port')
     .option('--no-browser', 'do not open browser automatically')
     .action(async (coursePath, options) => {
         try {
             const absolutePath = path.resolve(coursePath);
-            const port = parseInt(options.port, 10);
+            const isPortSpecified = !!options.port;
+            const port = isPortSpecified ? parseInt(options.port, 10) : 3000;
 
             log(`Starting CourseWatcher in: ${absolutePath}`);
 
             await startServer({
                 coursePath: absolutePath,
                 port,
+                allowFallback: !isPortSpecified,
                 openBrowser: options.browser,
             });
         } catch (err) {

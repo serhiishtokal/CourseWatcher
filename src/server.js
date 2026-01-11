@@ -27,7 +27,7 @@ const chalk = require('chalk');
  * @returns {Promise<Object>} Server instance and services
  */
 async function startServer(options) {
-    const { coursePath, port, openBrowser } = options;
+    const { coursePath, port, openBrowser, allowFallback } = options;
 
     // Initialize database
     log('Initializing database...');
@@ -93,73 +93,86 @@ async function startServer(options) {
 
     // Start server
     return new Promise((resolve, reject) => {
-        const server = app.listen(port, () => {
-            const url = `http://localhost:${port}`;
-            success(`Server running at ${chalk.cyan(url)}`);
+        let currentPort = port;
 
-            // Open browser if requested
-            if (openBrowser) {
-                log('Opening browser...');
-                open(url).catch(() => {
-                    // Ignore browser open errors
-                });
-            }
+        const start = (retryPort) => {
+            const server = app.listen(retryPort, () => {
+                const url = `http://localhost:${retryPort}`;
+                success(`Server running at ${chalk.cyan(url)}`);
 
-            // Track active connections
-            const sockets = new Set();
-            server.on('connection', (socket) => {
-                sockets.add(socket);
-                server.once('close', () => sockets.delete(socket));
-            });
-
-            // Handle graceful shutdown
-            let isShuttingDown = false;
-            const shutdown = async (signal) => {
-                if (isShuttingDown) return;
-                isShuttingDown = true;
-
-                log(`\nShutting down... (${signal})`);
-
-                // Force exit after timeout if graceful shutdown fails
-                const forceExitTimeout = setTimeout(() => {
-                    error('Forced shutdown after timeout');
-                    process.exit(1);
-                }, 5000);
-
-                // Destroy all active connections
-                for (const socket of sockets) {
-                    socket.destroy();
-                    sockets.delete(socket);
+                // Open browser if requested
+                if (openBrowser) {
+                    log('Opening browser...');
+                    open(url).catch(() => {
+                        // Ignore browser open errors
+                    });
                 }
 
-                database.close();
-                server.close(() => {
-                    clearTimeout(forceExitTimeout);
-                    success('Server closed');
-                    process.exit(0);
+                // Track active connections
+                const sockets = new Set();
+                server.on('connection', (socket) => {
+                    sockets.add(socket);
+                    server.once('close', () => sockets.delete(socket));
                 });
-            };
 
-            process.on('SIGINT', () => shutdown('SIGINT'));
-            process.on('SIGTERM', () => shutdown('SIGTERM'));
+                // Handle graceful shutdown
+                let isShuttingDown = false;
+                const shutdown = async (signal) => {
+                    if (isShuttingDown) return;
+                    isShuttingDown = true;
 
-            resolve({
-                server,
-                database,
-                services: {
-                    videoService,
-                    progressService,
-                    notesService,
-                },
+                    log(`\nShutting down... (${signal})`);
+
+                    // Force exit after timeout if graceful shutdown fails
+                    const forceExitTimeout = setTimeout(() => {
+                        error('Forced shutdown after timeout');
+                        process.exit(1);
+                    }, 5000);
+
+                    // Destroy all active connections
+                    for (const socket of sockets) {
+                        socket.destroy();
+                        sockets.delete(socket);
+                    }
+
+                    database.close();
+                    server.close(() => {
+                        clearTimeout(forceExitTimeout);
+                        success('Server closed');
+                        process.exit(0);
+                    });
+                };
+
+                process.on('SIGINT', () => shutdown('SIGINT'));
+                process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+                resolve({
+                    server,
+                    database,
+                    services: {
+                        videoService,
+                        progressService,
+                        notesService,
+                    },
+                });
             });
-        });
 
-        server.on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-                error(`Port ${port} is already in use`);
-            }
-            reject(err);
-        });
+            server.on('error', (err) => {
+                if (err.code === 'EADDRINUSE') {
+                    if (allowFallback) {
+                        log(`Port ${retryPort} is busy, trying ${retryPort + 1}...`);
+                        start(retryPort + 1);
+                    } else {
+                        error(`Port ${retryPort} is already in use`);
+                        reject(err);
+                    }
+                } else {
+                    reject(err);
+                }
+            });
+        };
+
+        start(currentPort);
     });
 }
 
