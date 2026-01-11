@@ -1,38 +1,28 @@
 /**
  * Video Player Controls
  * 
- * Handles keyboard shortcuts, playback controls, and progress auto-save.
+ * Handles Plyr initialization, keyboard shortcuts, and progress auto-save.
  */
 
 (function () {
     'use strict';
 
     // Constants
-    const SPEED_STEP = 0.25;
-    const MIN_SPEED = 0.25;
-    const MAX_SPEED = 4.0;
-    const SEEK_SHORT = 5;
-    const SEEK_MEDIUM = 10;
-    const SEEK_LONG = 30;
     const SAVE_INTERVAL = 5000; // Save progress every 5 seconds
 
     // Elements
-    const video = document.getElementById('videoPlayer');
-    const speedDisplay = document.getElementById('speedDisplay');
-    const speedDown = document.getElementById('speedDown');
-    const speedUp = document.getElementById('speedUp');
-    const seekBack5 = document.getElementById('seekBack5');
-    const seekForward5 = document.getElementById('seekForward5');
-    const seekForward10 = document.getElementById('seekForward10');
-    const statusButtons = document.querySelectorAll('.status-btn');
+    const videoElement = document.getElementById('videoPlayer');
+
+    // Notes & Status
     const notesEditor = document.getElementById('notesEditor');
     const saveNotesBtn = document.getElementById('saveNotes');
     const notesSaveStatus = document.getElementById('notesSaveStatus');
+    const statusButtons = document.querySelectorAll('.status-btn');
 
-    if (!video) return;
+    if (!videoElement) return;
 
-    const videoId = video.dataset.videoId;
-    const savedPosition = parseFloat(video.dataset.savedPosition) || 0;
+    const videoId = videoElement.dataset.videoId;
+    const savedPosition = parseFloat(videoElement.dataset.savedPosition) || 0;
 
     let saveTimeout = null;
     let lastSavedPosition = savedPosition;
@@ -41,54 +31,45 @@
     // Initialization
     // ==========================================
 
-    /**
-     * Initialize player
-     */
     function init() {
-        // Restore saved position
-        video.addEventListener('loadedmetadata', () => {
-            if (savedPosition > 0 && savedPosition < video.duration) {
-                video.currentTime = savedPosition;
-            }
-            updateSpeedDisplay();
+        // Initialize Plyr
+        const player = new Plyr('#videoPlayer', {
+            keyboard: { focused: true, global: true },
+            seekTime: 5,
+            controls: [
+                'play-large', // The large play button in the center
+                'restart', // Restart playback
+                'rewind', // Rewind by the seek time (default 10 seconds)
+                'play', // Play/pause playback
+                'fast-forward', // Fast forward by the seek time (default 10 seconds)
+                'progress', // The progress bar and scrubber for playback and buffering
+                'current-time', // The current time of playback
+                'duration', // The full duration of the media
+                'mute', // Toggle mute
+                'volume', // Volume control
+                'captions', // Toggle captions
+                'settings', // Settings menu
+                'pip', // Picture-in-picture (currently Safari only)
+                'airplay', // Airplay (currently Safari only)
+                'fullscreen', // Toggle fullscreen
+            ]
         });
 
-        // Set up event listeners
-        setupPlaybackControls();
+        // Restore saved position
+        player.on('ready', () => {
+            if (savedPosition > 0) {
+                player.currentTime = savedPosition;
+            }
+        });
+
+        // Setup Logic
         setupStatusControls();
-        setupKeyboardShortcuts();
         setupNotesControls();
-        setupProgressAutoSave();
-    }
+        setupProgressAutoSave(player);
 
-    // ==========================================
-    // Playback Controls
-    // ==========================================
-
-    function setupPlaybackControls() {
-        speedDown?.addEventListener('click', () => changeSpeed(-SPEED_STEP));
-        speedUp?.addEventListener('click', () => changeSpeed(SPEED_STEP));
-        seekBack5?.addEventListener('click', () => seek(-SEEK_SHORT));
-        seekForward5?.addEventListener('click', () => seek(SEEK_SHORT));
-        seekForward10?.addEventListener('click', () => seek(SEEK_MEDIUM));
-    }
-
-    function changeSpeed(delta) {
-        let newSpeed = video.playbackRate + delta;
-        newSpeed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, newSpeed));
-        newSpeed = Math.round(newSpeed * 100) / 100; // Fix floating point
-        video.playbackRate = newSpeed;
-        updateSpeedDisplay();
-    }
-
-    function updateSpeedDisplay() {
-        if (speedDisplay) {
-            speedDisplay.textContent = video.playbackRate.toFixed(2) + 'x';
-        }
-    }
-
-    function seek(seconds) {
-        video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+        // Custom shortcuts not covered by Plyr (if any)
+        // Plyr covers Space, K, F, M, Arrow keys.
+        // We can add custom ones if needed, but standard ones are usually enough.
     }
 
     // ==========================================
@@ -124,110 +105,47 @@
     }
 
     // ==========================================
-    // Keyboard Shortcuts
-    // ==========================================
-
-    function setupKeyboardShortcuts() {
-        document.addEventListener('keydown', (e) => {
-            // Ignore if typing in notes
-            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
-                return;
-            }
-
-            switch (e.key.toLowerCase()) {
-                case ' ':
-                    e.preventDefault();
-                    video.paused ? video.play() : video.pause();
-                    break;
-                case 'w':
-                    changeSpeed(-SPEED_STEP);
-                    break;
-                case 'e':
-                    changeSpeed(SPEED_STEP);
-                    break;
-                case 'j':
-                    seek(e.shiftKey ? -SEEK_LONG : -SEEK_SHORT);
-                    break;
-                case 'k':
-                    seek(SEEK_SHORT);
-                    break;
-                case 'l':
-                    seek(e.shiftKey ? SEEK_LONG : SEEK_MEDIUM);
-                    break;
-                case 'arrowleft':
-                    seek(-SEEK_SHORT);
-                    break;
-                case 'arrowright':
-                    seek(SEEK_SHORT);
-                    break;
-                case 'arrowup':
-                    e.preventDefault();
-                    video.volume = Math.min(1, video.volume + 0.1);
-                    break;
-                case 'arrowdown':
-                    e.preventDefault();
-                    video.volume = Math.max(0, video.volume - 0.1);
-                    break;
-                case 'm':
-                    video.muted = !video.muted;
-                    break;
-                case 'f':
-                    toggleFullscreen();
-                    break;
-            }
-        });
-    }
-
-    function toggleFullscreen() {
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        } else {
-            video.requestFullscreen?.() || video.webkitRequestFullscreen?.();
-        }
-    }
-
-    // ==========================================
     // Progress Auto-Save
     // ==========================================
 
-    function setupProgressAutoSave() {
+    function setupProgressAutoSave(player) {
         // Save on pause
-        video.addEventListener('pause', saveProgress);
+        player.on('pause', () => saveProgress(player));
 
         // Save on video end
-        video.addEventListener('ended', () => {
-            saveProgress();
+        player.on('ended', () => {
+            saveProgress(player);
             updateStatus('completed');
         });
 
         // Periodic save during playback
-        video.addEventListener('timeupdate', () => {
-            const currentPos = Math.floor(video.currentTime);
+        player.on('timeupdate', () => {
+            const currentPos = Math.floor(player.currentTime);
 
             // Only save every 5 seconds of playback
             if (Math.abs(currentPos - lastSavedPosition) >= 5) {
-                scheduleProgressSave();
+                scheduleProgressSave(player);
             }
         });
 
         // Save before page unload
         window.addEventListener('beforeunload', () => {
-            saveProgressSync();
+            saveProgressSync(player);
         });
     }
 
-    function scheduleProgressSave() {
+    function scheduleProgressSave(player) {
         if (saveTimeout) return;
 
         saveTimeout = setTimeout(() => {
-            saveProgress();
+            saveProgress(player);
             saveTimeout = null;
         }, 1000);
     }
 
-    async function saveProgress() {
-        const position = video.currentTime;
-        const duration = video.duration;
+    async function saveProgress(player) {
+        const position = player.currentTime;
+        const duration = player.duration;
 
         if (isNaN(position) || isNaN(duration)) return;
 
@@ -243,9 +161,9 @@
         }
     }
 
-    function saveProgressSync() {
-        const position = video.currentTime;
-        const duration = video.duration;
+    function saveProgressSync(player) {
+        const position = player.currentTime;
+        const duration = player.duration;
 
         if (isNaN(position) || isNaN(duration)) return;
 

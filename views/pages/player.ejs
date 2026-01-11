@@ -7,10 +7,11 @@
 
             <main class="container player-container">
                 <!-- Video Player Section -->
+                <!-- Video Player Section -->
                 <section class="player-section">
                     <div class="video-wrapper">
-                        <video id="videoPlayer" class="video-player" controls preload="metadata"
-                            data-video-id="<%= video.id %>" data-saved-position="<%= video.position %>">
+                        <video id="videoPlayer" class="plyr" playsinline controls data-video-id="<%= video.id %>"
+                            data-saved-position="<%= video.position %>">
                             <source src="/api/videos/<%= video.id %>/stream" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -63,37 +64,18 @@
                         </div>
                     </div>
 
-                    <!-- Playback Controls -->
-                    <div class="playback-controls">
-                        <div class="control-group">
-                            <span class="control-label">Speed</span>
-                            <button class="control-btn" id="speedDown" title="Decrease speed (W)">W ◀</button>
-                            <span class="control-value" id="speedDisplay">1.0x</span>
-                            <button class="control-btn" id="speedUp" title="Increase speed (E)">▶ E</button>
-                        </div>
-
-                        <div class="control-group">
-                            <span class="control-label">Seek</span>
-                            <button class="control-btn" id="seekBack5" title="Back 5s (J)">◀◀ 5s</button>
-                            <button class="control-btn" id="seekForward5" title="Forward 5s (K)">5s ▶▶</button>
-                            <button class="control-btn" id="seekForward10" title="Forward 10s (L)">10s ▶▶</button>
-                        </div>
-                    </div>
-
                     <!-- Keyboard Shortcuts Help -->
                     <details class="shortcuts-help">
                         <summary>⌨️ Keyboard Shortcuts</summary>
                         <div class="shortcuts-grid">
-                            <div class="shortcut"><kbd>Space</kbd> Play/Pause</div>
-                            <div class="shortcut"><kbd>W</kbd> Slower</div>
-                            <div class="shortcut"><kbd>E</kbd> Faster</div>
-                            <div class="shortcut"><kbd>J</kbd> Back 5s</div>
-                            <div class="shortcut"><kbd>K</kbd> Forward 5s</div>
-                            <div class="shortcut"><kbd>L</kbd> Forward 10s</div>
-                            <div class="shortcut"><kbd>Shift+J</kbd> Back 30s</div>
-                            <div class="shortcut"><kbd>Shift+L</kbd> Forward 30s</div>
-                            <div class="shortcut"><kbd>←</kbd> Back 5s</div>
-                            <div class="shortcut"><kbd>→</kbd> Forward 5s</div>
+                            <div class="shortcut"><kbd>Space</kbd> / <kbd>K</kbd> Play/Pause</div>
+                            <div class="shortcut"><kbd>M</kbd> Mute/Unmute</div>
+                            <div class="shortcut"><kbd>F</kbd> Fullscreen</div>
+                            <div class="shortcut"><kbd>←</kbd> Back 10s</div>
+                            <div class="shortcut"><kbd>→</kbd> Forward 10s</div>
+                            <div class="shortcut"><kbd>↑</kbd> Volume Up</div>
+                            <div class="shortcut"><kbd>↓</kbd> Volume Down</div>
+                            <div class="shortcut"><kbd>C</kbd> Captions</div>
                         </div>
                     </details>
                 </section>
@@ -112,6 +94,8 @@
 
             <%- include('../partials/footer') %>
 
+                <link rel="stylesheet" href="/lib/plyr/plyr.css" />
+                <script src="/lib/plyr/plyr.js"></script>
                 <script src="/static/js/player.js"></script>
     </body>
 

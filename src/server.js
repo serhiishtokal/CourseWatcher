@@ -53,6 +53,7 @@ async function startServer(options) {
 
     // Static files
     app.use('/static', express.static(path.join(__dirname, '..', 'public')));
+    app.use('/lib/plyr', express.static(path.join(__dirname, '..', 'node_modules', 'plyr', 'dist')));
 
     // Routes
     app.use('/', createVideoRoutes({
