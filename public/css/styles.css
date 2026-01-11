@@ -1060,10 +1060,10 @@ a:hover {
    ========================================== */
 
 .queue-panel {
-  width: 35%;
-  /* Wider responsive width */
-  min-width: 350px;
-  max-width: 600px;
+  width: 30%;
+  /* Slightly narrower width */
+  min-width: 300px;
+  max-width: 450px;
   flex-shrink: 0;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-lg);
