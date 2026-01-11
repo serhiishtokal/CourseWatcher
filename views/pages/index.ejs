@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head', { title }) %>
+
+    <body>
+        <%- include('../partials/header') %>
+
+            <main class="container">
+                <!-- Stats Section -->
+                <section class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value">
+                                <%= stats.total %>
+                            </span>
+                            <span class="stat-label">Total Videos</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">
+                                <%= stats.completed %>
+                            </span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">
+                                <%= stats.inProgress %>
+                            </span>
+                            <span class="stat-label">In Progress</span>
+                        </div>
+                        <div class="stat-card stat-card-highlight">
+                            <span class="stat-value">
+                                <%= stats.percentComplete %>%
+                            </span>
+                            <span class="stat-label">Course Progress</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Modules Section -->
+                <section class="modules-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Course Content</h2>
+
+                        <!-- Sort Controls -->
+                        <div class="sort-controls">
+                            <span class="sort-label">Sort by:</span>
+                            <div class="sort-buttons">
+                                <a href="/?sort=name" class="sort-btn <%= currentSort === 'name' ? 'active' : '' %>">
+                                    Name ↑
+                                </a>
+                                <a href="/?sort=name_desc"
+                                    class="sort-btn <%= currentSort === 'name_desc' ? 'active' : '' %>">
+                                    Name ↓
+                                </a>
+                                <a href="/?sort=date" class="sort-btn <%= currentSort === 'date' ? 'active' : '' %>">
+                                    Date ↑
+                                </a>
+                                <a href="/?sort=date_desc"
+                                    class="sort-btn <%= currentSort === 'date_desc' ? 'active' : '' %>">
+                                    Date ↓
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (modules.length===0) { %>
+                        <div class="empty-state">
+                            <p>No videos found in this directory.</p>
+                            <p class="empty-hint">Make sure you're running CourseWatcher in a folder with video files.
+                            </p>
+                        </div>
+                        <% } else { %>
+                            <div class="modules-list">
+                                <% modules.forEach((mod, index)=> { %>
+                                    <details class="module-item" <%=index===0 ? 'open' : '' %>>
+                                        <summary class="module-header">
+                                            <span class="module-icon">📁</span>
+                                            <span class="module-name">
+                                                <%= mod.name %>
+                                            </span>
+                                            <span class="module-count">
+                                                <%= mod.videos.length %> videos
+                                            </span>
+                                            <span class="module-toggle">▼</span>
+                                        </summary>
+                                        <div class="module-content">
+                                            <% mod.videos.forEach(video=> { %>
+                                                <%- include('../partials/video-card', { video }) %>
+                                                    <% }) %>
+                                        </div>
+                                    </details>
+                                    <% }) %>
+                            </div>
+                            <% } %>
+                </section>
+            </main>
+
+            <%- include('../partials/footer') %>
+    </body>
+
+</html>

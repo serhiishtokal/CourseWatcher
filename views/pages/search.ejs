@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head', { title }) %>
+
+    <body>
+        <%- include('../partials/header') %>
+
+            <main class="container">
+                <section class="search-section">
+                    <h1 class="page-title">🔍 Search Results</h1>
+
+                    <form action="/search" method="GET" class="search-form-large">
+                        <input type="text" name="q" value="<%= query %>" placeholder="Search videos..."
+                            class="search-input-large" autofocus>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+
+                    <% if (query) { %>
+                        <p class="search-meta">
+                            Found <strong>
+                                <%= results.length %>
+                            </strong> result<%= results.length !==1 ? 's' : '' %>
+                                for "<%= query %>"
+                        </p>
+                        <% } %>
+
+                            <% if (results.length> 0) { %>
+                                <div class="search-results">
+                                    <% results.forEach(video=> { %>
+                                        <a href="/video/<%= video.id %>" class="search-result-card">
+                                            <div class="result-status">
+                                                <% if (video.status==='completed' ) { %>
+                                                    <span class="status-icon completed">✓</span>
+                                                    <% } else if (video.status==='in-progress' ) { %>
+                                                        <span class="status-icon in-progress">▶</span>
+                                                        <% } else { %>
+                                                            <span class="status-icon unwatched">○</span>
+                                                            <% } %>
+                                            </div>
+                                            <div class="result-content">
+                                                <h3 class="result-title">
+                                                    <%= video.title %>
+                                                </h3>
+                                                <% if (video.module_name) { %>
+                                                    <span class="result-module">📁 <%= video.module_name %></span>
+                                                    <% } %>
+                                            </div>
+                                        </a>
+                                        <% }) %>
+                                </div>
+                                <% } else if (query) { %>
+                                    <div class="empty-state">
+                                        <p>No videos found matching "<%= query %>"</p>
+                                        <p class="empty-hint">Try a different search term</p>
+                                    </div>
+                                    <% } %>
+                </section>
+            </main>
+
+            <%- include('../partials/footer') %>
+    </body>
+
+</html>

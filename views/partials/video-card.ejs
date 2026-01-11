@@ -1,0 +1,36 @@
+<a href="/video/<%= video.id %>" class="video-card">
+    <div class="video-card-icon">
+        <% if (video.status==='completed' ) { %>
+            <span class="status-icon completed">✓</span>
+            <% } else if (video.status==='in-progress' ) { %>
+                <span class="status-icon in-progress">▶</span>
+                <% } else { %>
+                    <span class="status-icon unwatched">○</span>
+                    <% } %>
+    </div>
+    <div class="video-card-content">
+        <h3 class="video-card-title">
+            <%= video.title %>
+        </h3>
+        <% if (video.duration> 0) { %>
+            <div class="video-card-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"
+                        style="width: <%= Math.round((video.position / video.duration) * 100) %>%"></div>
+                </div>
+                <span class="progress-text">
+                    <%= Math.round((video.position / video.duration) * 100) %>%
+                </span>
+            </div>
+            <% } %>
+    </div>
+    <div class="video-card-badge">
+        <% if (video.status==='completed' ) { %>
+            <span class="badge badge-success">Completed</span>
+            <% } else if (video.status==='in-progress' ) { %>
+                <span class="badge badge-warning">In Progress</span>
+                <% } else { %>
+                    <span class="badge badge-default">Not Started</span>
+                    <% } %>
+    </div>
+</a>

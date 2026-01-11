@@ -1,0 +1,40 @@
+{
+    "name": "coursewatcher",
+    "version": "1.0.0",
+    "description": "A CLI tool and web interface for tracking progress in downloaded video courses",
+    "main": "src/server.js",
+    "bin": {
+        "coursewatcher": "./bin/coursewatcher.js"
+    },
+    "scripts": {
+        "start": "node bin/coursewatcher.js",
+        "dev": "node bin/coursewatcher.js",
+        "test": "jest",
+        "test:coverage": "jest --coverage",
+        "test:watch": "jest --watch"
+    },
+    "keywords": [
+        "video",
+        "course",
+        "tracker",
+        "education",
+        "cli"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "better-sqlite3": "^11.6.0",
+        "chalk": "^4.1.2",
+        "commander": "^12.1.0",
+        "ejs": "^3.1.10",
+        "express": "^4.21.1",
+        "open": "^8.4.2"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "supertest": "^7.0.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

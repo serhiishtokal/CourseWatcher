@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head', { title }) %>
+
+    <body>
+        <%- include('../partials/header') %>
+
+            <main class="container player-container">
+                <!-- Video Player Section -->
+                <section class="player-section">
+                    <div class="video-wrapper">
+                        <video id="videoPlayer" class="video-player" controls preload="metadata"
+                            data-video-id="<%= video.id %>" data-saved-position="<%= video.position %>">
+                            <source src="/api/videos/<%= video.id %>/stream" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="player-nav">
+                        <% if (adjacent.prev) { %>
+                            <a href="/video/<%= adjacent.prev %>" class="nav-button prev">
+                                ← Previous
+                            </a>
+                            <% } else { %>
+                                <span class="nav-button disabled">← Previous</span>
+                                <% } %>
+
+                                    <a href="/" class="nav-button home">📚 Back to Course</a>
+
+                                    <% if (adjacent.next) { %>
+                                        <a href="/video/<%= adjacent.next %>" class="nav-button next">
+                                            Next →
+                                        </a>
+                                        <% } else { %>
+                                            <span class="nav-button disabled">Next →</span>
+                                            <% } %>
+                    </div>
+                </section>
+
+                <!-- Video Info Section -->
+                <section class="video-info-section">
+                    <h1 class="video-title">
+                        <%= video.title %>
+                    </h1>
+
+                    <!-- Status Controls -->
+                    <div class="status-controls">
+                        <span class="status-label">Status:</span>
+                        <div class="status-buttons">
+                            <button class="status-btn <%= video.status === 'unwatched' ? 'active' : '' %>"
+                                data-status="unwatched">
+                                ○ Unwatched
+                            </button>
+                            <button class="status-btn <%= video.status === 'in-progress' ? 'active' : '' %>"
+                                data-status="in-progress">
+                                ▶ In Progress
+                            </button>
+                            <button class="status-btn <%= video.status === 'completed' ? 'active' : '' %>"
+                                data-status="completed">
+                                ✓ Completed
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Playback Controls -->
+                    <div class="playback-controls">
+                        <div class="control-group">
+                            <span class="control-label">Speed</span>
+                            <button class="control-btn" id="speedDown" title="Decrease speed (W)">W ◀</button>
+                            <span class="control-value" id="speedDisplay">1.0x</span>
+                            <button class="control-btn" id="speedUp" title="Increase speed (E)">▶ E</button>
+                        </div>
+
+                        <div class="control-group">
+                            <span class="control-label">Seek</span>
+                            <button class="control-btn" id="seekBack5" title="Back 5s (J)">◀◀ 5s</button>
+                            <button class="control-btn" id="seekForward5" title="Forward 5s (K)">5s ▶▶</button>
+                            <button class="control-btn" id="seekForward10" title="Forward 10s (L)">10s ▶▶</button>
+                        </div>
+                    </div>
+
+                    <!-- Keyboard Shortcuts Help -->
+                    <details class="shortcuts-help">
+                        <summary>⌨️ Keyboard Shortcuts</summary>
+                        <div class="shortcuts-grid">
+                            <div class="shortcut"><kbd>Space</kbd> Play/Pause</div>
+                            <div class="shortcut"><kbd>W</kbd> Slower</div>
+                            <div class="shortcut"><kbd>E</kbd> Faster</div>
+                            <div class="shortcut"><kbd>J</kbd> Back 5s</div>
+                            <div class="shortcut"><kbd>K</kbd> Forward 5s</div>
+                            <div class="shortcut"><kbd>L</kbd> Forward 10s</div>
+                            <div class="shortcut"><kbd>Shift+J</kbd> Back 30s</div>
+                            <div class="shortcut"><kbd>Shift+L</kbd> Forward 30s</div>
+                            <div class="shortcut"><kbd>←</kbd> Back 5s</div>
+                            <div class="shortcut"><kbd>→</kbd> Forward 5s</div>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- Notes Section -->
+                <section class="notes-section">
+                    <h2 class="section-title">📝 Notes</h2>
+                    <textarea id="notesEditor" class="notes-editor"
+                        placeholder="Take notes for this video... (Markdown supported)"><%= notes.content || '' %></textarea>
+                    <div class="notes-actions">
+                        <button id="saveNotes" class="btn btn-primary">Save Notes</button>
+                        <span id="notesSaveStatus" class="save-status"></span>
+                    </div>
+                </section>
+            </main>
+
+            <%- include('../partials/footer') %>
+
+                <script src="/static/js/player.js"></script>
+    </body>
+
+</html>
