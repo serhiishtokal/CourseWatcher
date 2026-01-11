@@ -104,6 +104,13 @@ async function startServer(options) {
                 });
             }
 
+            // Track active connections
+            const sockets = new Set();
+            server.on('connection', (socket) => {
+                sockets.add(socket);
+                server.once('close', () => sockets.delete(socket));
+            });
+
             // Handle graceful shutdown
             let isShuttingDown = false;
             const shutdown = async (signal) => {
@@ -117,6 +124,12 @@ async function startServer(options) {
                     error('Forced shutdown after timeout');
                     process.exit(1);
                 }, 5000);
+
+                // Destroy all active connections
+                for (const socket of sockets) {
+                    socket.destroy();
+                    sockets.delete(socket);
+                }
 
                 database.close();
                 server.close(() => {

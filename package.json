@@ -1,6 +1,6 @@
 {
     "name": "coursewatcher",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A CLI tool and web interface for tracking progress in downloaded video courses",
     "main": "src/server.js",
     "bin": {
@@ -18,10 +18,27 @@
         "course",
         "tracker",
         "education",
-        "cli"
+        "cli",
+        "progress",
+        "learning",
+        "tutorial"
     ],
-    "author": "",
+    "author": "Serhii Shtokal <serhiishtokal@gmail.com>",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/serhiishtokal/CourseWatcher.git"
+    },
+    "homepage": "https://github.com/serhiishtokal/CourseWatcher#readme",
+    "bugs": {
+        "url": "https://github.com/serhiishtokal/CourseWatcher/issues"
+    },
+    "files": [
+        "bin/",
+        "src/",
+        "views/",
+        "public/"
+    ],
     "dependencies": {
         "better-sqlite3": "^11.6.0",
         "chalk": "^4.1.2",

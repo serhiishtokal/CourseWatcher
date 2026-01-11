@@ -1,5 +1,10 @@
 # CourseWatcher
 
+[![npm version](https://img.shields.io/npm/v/coursewatcher.svg)](https://www.npmjs.com/package/coursewatcher)
+[![npm downloads](https://img.shields.io/npm/dm/coursewatcher.svg)](https://www.npmjs.com/package/coursewatcher)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 **A CLI tool and web interface for tracking progress in downloaded video courses.**
 
 ## Quick Start

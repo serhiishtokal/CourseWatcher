@@ -1,0 +1,15 @@
+# Development & Testing
+tests/
+docs/
+video-samples/
+jest.config.js
+*.log
+
+# Data
+.coursewatcher/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
