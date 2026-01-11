@@ -6,90 +6,149 @@
         <%- include('../partials/header') %>
 
             <main class="container player-container">
-                <!-- Video Player Section -->
-                <!-- Video Player Section -->
-                <section class="player-section">
-                    <h1 class="video-title">
-                        <%= video.title %>
-                    </h1>
-                    <div class="video-wrapper">
-                        <video id="videoPlayer" class="plyr" playsinline controls data-video-id="<%= video.id %>"
-                            data-saved-position="<%= video.position %>">
-                            <source src="/api/videos/<%= video.id %>/stream" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                <div class="player-layout">
+                    <!-- Main Player Section -->
+                    <div class="player-main">
+                        <!-- Video Player Section -->
+                        <section class="player-section">
+                            <h1 class="video-title">
+                                <%= video.title %>
+                            </h1>
+                            <div class="video-wrapper">
+                                <video id="videoPlayer" class="plyr" playsinline controls
+                                    data-video-id="<%= video.id %>" data-saved-position="<%= video.position %>"
+                                    data-next-video-url="<%= adjacent.next ? '/video/' + adjacent.next : '' %>">
+                                    <source src="/api/videos/<%= video.id %>/stream" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+
+                                <!-- Auto-play Countdown Overlay -->
+                                <div id="autoplayOverlay" class="autoplay-overlay hidden">
+                                    <div class="autoplay-content">
+                                        <button id="skipToNext" class="autoplay-countdown-ring"
+                                            title="Click to play now">
+                                            <svg viewBox="0 0 100 100">
+                                                <circle cx="50" cy="50" r="45" class="countdown-bg" />
+                                                <circle cx="50" cy="50" r="45" class="countdown-progress"
+                                                    id="countdownProgress" />
+                                            </svg>
+                                            <span id="countdownNumber" class="countdown-number">5</span>
+                                        </button>
+                                        <p class="autoplay-text">Up Next</p>
+                                        <p id="nextVideoTitle" class="autoplay-next-title"></p>
+                                        <button id="cancelAutoplay" class="btn autoplay-cancel">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Navigation -->
+                            <div class="player-nav">
+                                <% if (adjacent.prev) { %>
+                                    <a href="/video/<%= adjacent.prev %>" class="nav-button prev">
+                                        ← Previous
+                                    </a>
+                                    <% } else { %>
+                                        <span class="nav-button disabled">← Previous</span>
+                                        <% } %>
+
+                                            <a href="/" class="nav-button home">📚 Back to Course</a>
+
+                                            <% if (adjacent.next) { %>
+                                                <a href="/video/<%= adjacent.next %>" class="nav-button next">
+                                                    Next →
+                                                </a>
+                                                <% } else { %>
+                                                    <span class="nav-button disabled">Next →</span>
+                                                    <% } %>
+                            </div>
+                        </section>
+
+                        <!-- Video Info Section -->
+                        <section class="video-info-section">
+
+                            <!-- Status Controls -->
+                            <div class="status-controls">
+                                <span class="status-label">Status:</span>
+                                <div class="status-buttons">
+                                    <button class="status-btn <%= video.status === 'unwatched' ? 'active' : '' %>"
+                                        data-status="unwatched">
+                                        ○ Unwatched
+                                    </button>
+                                    <button class="status-btn <%= video.status === 'in-progress' ? 'active' : '' %>"
+                                        data-status="in-progress">
+                                        ▶ In Progress
+                                    </button>
+                                    <button class="status-btn <%= video.status === 'completed' ? 'active' : '' %>"
+                                        data-status="completed">
+                                        ✓ Completed
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Keyboard Shortcuts Help -->
+                            <details class="shortcuts-help">
+                                <summary>⌨️ Keyboard Shortcuts</summary>
+                                <div class="shortcuts-grid">
+                                    <div class="shortcut"><kbd>Space</kbd> / <kbd>K</kbd> Play/Pause</div>
+                                    <div class="shortcut"><kbd>M</kbd> Mute/Unmute</div>
+                                    <div class="shortcut"><kbd>F</kbd> Fullscreen</div>
+                                    <div class="shortcut"><kbd>←</kbd> Back 10s</div>
+                                    <div class="shortcut"><kbd>→</kbd> Forward 10s</div>
+                                    <div class="shortcut"><kbd>↑</kbd> Volume Up</div>
+                                    <div class="shortcut"><kbd>↓</kbd> Volume Down</div>
+                                    <div class="shortcut"><kbd>C</kbd> Captions</div>
+                                </div>
+                            </details>
+                        </section>
+
+                        <!-- Notes Section -->
+                        <section class="notes-section">
+                            <h2 class="section-title">📝 Notes</h2>
+                            <textarea id="notesEditor" class="notes-editor"
+                                placeholder="Take notes for this video... (Markdown supported)"><%= notes.content || '' %></textarea>
+                            <div class="notes-actions">
+                                <button id="saveNotes" class="btn btn-primary">Save Notes</button>
+                                <span id="notesSaveStatus" class="save-status"></span>
+                            </div>
+                        </section>
                     </div>
 
-                    <!-- Navigation -->
-                    <div class="player-nav">
-                        <% if (adjacent.prev) { %>
-                            <a href="/video/<%= adjacent.prev %>" class="nav-button prev">
-                                ← Previous
-                            </a>
-                            <% } else { %>
-                                <span class="nav-button disabled">← Previous</span>
-                                <% } %>
-
-                                    <a href="/" class="nav-button home">📚 Back to Course</a>
-
-                                    <% if (adjacent.next) { %>
-                                        <a href="/video/<%= adjacent.next %>" class="nav-button next">
-                                            Next →
-                                        </a>
-                                        <% } else { %>
-                                            <span class="nav-button disabled">Next →</span>
-                                            <% } %>
-                    </div>
-                </section>
-
-                <!-- Video Info Section -->
-                <section class="video-info-section">
-
-                    <!-- Status Controls -->
-                    <div class="status-controls">
-                        <span class="status-label">Status:</span>
-                        <div class="status-buttons">
-                            <button class="status-btn <%= video.status === 'unwatched' ? 'active' : '' %>"
-                                data-status="unwatched">
-                                ○ Unwatched
-                            </button>
-                            <button class="status-btn <%= video.status === 'in-progress' ? 'active' : '' %>"
-                                data-status="in-progress">
-                                ▶ In Progress
-                            </button>
-                            <button class="status-btn <%= video.status === 'completed' ? 'active' : '' %>"
-                                data-status="completed">
-                                ✓ Completed
-                            </button>
+                    <!-- Queue Panel -->
+                    <aside class="queue-panel">
+                        <div class="queue-header">
+                            <h2 class="queue-title">📋 Queue</h2>
+                            <span class="queue-module-name">
+                                <%= queue.moduleName %>
+                            </span>
                         </div>
-                    </div>
-
-                    <!-- Keyboard Shortcuts Help -->
-                    <details class="shortcuts-help">
-                        <summary>⌨️ Keyboard Shortcuts</summary>
-                        <div class="shortcuts-grid">
-                            <div class="shortcut"><kbd>Space</kbd> / <kbd>K</kbd> Play/Pause</div>
-                            <div class="shortcut"><kbd>M</kbd> Mute/Unmute</div>
-                            <div class="shortcut"><kbd>F</kbd> Fullscreen</div>
-                            <div class="shortcut"><kbd>←</kbd> Back 10s</div>
-                            <div class="shortcut"><kbd>→</kbd> Forward 10s</div>
-                            <div class="shortcut"><kbd>↑</kbd> Volume Up</div>
-                            <div class="shortcut"><kbd>↓</kbd> Volume Down</div>
-                            <div class="shortcut"><kbd>C</kbd> Captions</div>
+                        <div class="queue-list">
+                            <% queue.videos.forEach((qVideo, index)=> { %>
+                                <a href="/video/<%= qVideo.id %>"
+                                    class="queue-item <%= qVideo.id === queue.currentId ? 'active' : '' %>"
+                                    data-video-id="<%= qVideo.id %>" data-video-title="<%= qVideo.title %>">
+                                    <span class="queue-item-number">
+                                        <%= index + 1 %>
+                                    </span>
+                                    <div class="queue-item-content">
+                                        <span class="queue-item-title">
+                                            <%= qVideo.title %>
+                                        </span>
+                                        <div class="queue-item-meta">
+                                            <span class="queue-item-status status-<%= qVideo.status %>">
+                                                <% if (qVideo.status==='completed' ) { %>✓
+                                                    <% } else if (qVideo.status==='in-progress' ) { %>▶
+                                                        <% } else { %>○<% } %>
+                                            </span>
+                                            <% if (qVideo.id===queue.currentId) { %>
+                                                <span class="queue-item-playing">Now Playing</span>
+                                                <% } %>
+                                        </div>
+                                    </div>
+                                </a>
+                                <% }); %>
                         </div>
-                    </details>
-                </section>
-
-                <!-- Notes Section -->
-                <section class="notes-section">
-                    <h2 class="section-title">📝 Notes</h2>
-                    <textarea id="notesEditor" class="notes-editor"
-                        placeholder="Take notes for this video... (Markdown supported)"><%= notes.content || '' %></textarea>
-                    <div class="notes-actions">
-                        <button id="saveNotes" class="btn btn-primary">Save Notes</button>
-                        <span id="notesSaveStatus" class="save-status"></span>
-                    </div>
-                </section>
+                    </aside>
+                </div>
             </main>
 
             <%- include('../partials/footer') %>

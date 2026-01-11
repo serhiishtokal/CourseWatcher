@@ -1,7 +1,8 @@
 /**
  * Video Player Controls
  * 
- * Handles Plyr initialization, keyboard shortcuts, and progress auto-save.
+ * Handles Plyr initialization, keyboard shortcuts, progress auto-save,
+ * and autoplay countdown functionality.
  */
 
 (function () {
@@ -9,6 +10,7 @@
 
     // Constants
     const SAVE_INTERVAL = 5000; // Save progress every 5 seconds
+    const AUTOPLAY_COUNTDOWN = 5; // Seconds before auto-navigating to next video
 
     // Elements
     const videoElement = document.getElementById('videoPlayer');
@@ -19,13 +21,23 @@
     const notesSaveStatus = document.getElementById('notesSaveStatus');
     const statusButtons = document.querySelectorAll('.status-btn');
 
+    // Autoplay elements
+    const autoplayOverlay = document.getElementById('autoplayOverlay');
+    const countdownNumber = document.getElementById('countdownNumber');
+    const countdownProgress = document.getElementById('countdownProgress');
+    const nextVideoTitle = document.getElementById('nextVideoTitle');
+    const cancelAutoplayBtn = document.getElementById('cancelAutoplay');
+
     if (!videoElement) return;
 
     const videoId = videoElement.dataset.videoId;
     const savedPosition = parseFloat(videoElement.dataset.savedPosition) || 0;
+    const nextVideoUrl = videoElement.dataset.nextVideoUrl;
 
     let saveTimeout = null;
     let lastSavedPosition = savedPosition;
+    let autoplayInterval = null;
+    let autoplayCountdown = AUTOPLAY_COUNTDOWN;
 
     // ==========================================
     // Initialization
@@ -55,17 +67,24 @@
             ]
         });
 
-        // Restore saved position
+        // Restore saved position and autoplay
         player.on('ready', () => {
             if (savedPosition > 0) {
                 player.currentTime = savedPosition;
             }
+
+            // Always try to autoplay
+            player.play().catch(() => {
+                // Autoplay might be blocked by browser on first visit, ignore
+                console.log('Autoplay was prevented by browser');
+            });
         });
 
         // Setup Logic
         setupStatusControls();
         setupNotesControls();
         setupProgressAutoSave(player);
+        setupAutoplay(player);
 
         // Custom shortcuts not covered by Plyr (if any)
         // Plyr covers Space, K, F, M, Arrow keys.
@@ -112,7 +131,7 @@
         // Save on pause
         player.on('pause', () => saveProgress(player));
 
-        // Save on video end
+        // Save on video end (but don't update status here, autoplay handles it)
         player.on('ended', () => {
             saveProgress(player);
             updateStatus('completed');
@@ -175,6 +194,111 @@
     }
 
     // ==========================================
+    // Autoplay Countdown
+    // ==========================================
+
+    function setupAutoplay(player) {
+        if (!nextVideoUrl || !autoplayOverlay) return;
+
+        // Get skip button
+        const skipToNextBtn = document.getElementById('skipToNext');
+
+        // Get next video title from queue
+        const nextVideoId = nextVideoUrl.split('/').pop();
+        const nextQueueItem = document.querySelector(`.queue-item[data-video-id="${nextVideoId}"]`);
+        const nextTitle = nextQueueItem ? nextQueueItem.dataset.videoTitle : 'Next Video';
+
+        // Set the title in the overlay
+        if (nextVideoTitle) {
+            nextVideoTitle.textContent = nextTitle;
+        }
+
+        // When video ends, start countdown
+        player.on('ended', () => {
+            startAutoplayCountdown();
+        });
+
+        // Skip button - navigate immediately
+        if (skipToNextBtn) {
+            skipToNextBtn.addEventListener('click', () => {
+                if (autoplayInterval) {
+                    clearInterval(autoplayInterval);
+                }
+                window.location.href = nextVideoUrl;
+            });
+        }
+
+        // Cancel button
+        if (cancelAutoplayBtn) {
+            cancelAutoplayBtn.addEventListener('click', () => {
+                cancelAutoplayCountdown();
+            });
+        }
+
+        // ESC key to cancel
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !autoplayOverlay.classList.contains('hidden')) {
+                cancelAutoplayCountdown();
+            }
+        });
+    }
+
+    function startAutoplayCountdown() {
+        if (!nextVideoUrl) return;
+
+        autoplayCountdown = AUTOPLAY_COUNTDOWN;
+
+        // Show overlay
+        autoplayOverlay.classList.remove('hidden');
+
+        // Update countdown display
+        updateCountdownDisplay();
+
+        // Start countdown interval
+        autoplayInterval = setInterval(() => {
+            autoplayCountdown--;
+            updateCountdownDisplay();
+
+            if (autoplayCountdown <= 0) {
+                clearInterval(autoplayInterval);
+                // Navigate to next video with autoplay
+                window.location.href = nextVideoUrl;
+            }
+        }, 1000);
+    }
+
+    function updateCountdownDisplay() {
+        if (countdownNumber) {
+            countdownNumber.textContent = autoplayCountdown;
+        }
+
+        if (countdownProgress) {
+            // Calculate progress (circle circumference is 2 * PI * r = 2 * PI * 45 ≈ 283)
+            const circumference = 283;
+            const progress = (AUTOPLAY_COUNTDOWN - autoplayCountdown) / AUTOPLAY_COUNTDOWN;
+            const offset = circumference * progress;
+            countdownProgress.style.strokeDashoffset = offset;
+        }
+    }
+
+    function cancelAutoplayCountdown() {
+        if (autoplayInterval) {
+            clearInterval(autoplayInterval);
+            autoplayInterval = null;
+        }
+
+        // Hide overlay
+        if (autoplayOverlay) {
+            autoplayOverlay.classList.add('hidden');
+        }
+
+        // Reset progress ring
+        if (countdownProgress) {
+            countdownProgress.style.strokeDashoffset = 0;
+        }
+    }
+
+    // ==========================================
     // Notes Controls
     // ==========================================
 
@@ -232,3 +356,4 @@
         init();
     }
 })();
+

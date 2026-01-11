@@ -278,6 +278,38 @@ class VideoService {
     }
 
     /**
+     * Get all videos in the same module for queue display
+     * @param {number} id - Current video ID
+     * @returns {Object} Object with moduleName and videos array
+     */
+    getQueueVideos(id) {
+        const video = this.getVideoById(id);
+
+        // Get module name
+        let moduleName = 'Videos';
+        if (video.module_id) {
+            const module = this._db.get('SELECT name FROM modules WHERE id = ?', [video.module_id]);
+            if (module) {
+                moduleName = module.name;
+            }
+        }
+
+        // Get all videos in same module, ordered
+        const videos = this._db.all(
+            `SELECT id, title, status, position, duration FROM videos 
+       WHERE module_id ${video.module_id ? '= ?' : 'IS NULL'}
+       ORDER BY sort_order, filename`,
+            video.module_id ? [video.module_id] : []
+        );
+
+        return {
+            moduleName,
+            videos,
+            currentId: id,
+        };
+    }
+
+    /**
      * Search videos by title
      * @param {string} query - Search query
      * @returns {Array} Matching videos

@@ -48,12 +48,14 @@ function createVideoRoutes(services) {
             const video = videoService.getVideoById(videoId);
             const adjacent = videoService.getAdjacentVideos(videoId);
             const notes = notesService.getNotes(videoId);
+            const queue = videoService.getQueueVideos(videoId);
 
             res.render('pages/player', {
                 title: video.title,
                 video,
                 adjacent,
                 notes,
+                queue,
             });
         } catch (err) {
             next(err);

@@ -504,7 +504,7 @@ a:hover {
    ========================================== */
 
 .player-container {
-  max-width: 1400px;
+  max-width: 1600px;
 }
 
 .player-section {
@@ -1038,3 +1038,289 @@ a:hover {
 
 /* Hide default controls on fullscreen if needed (we rely on custom ones now) */
 /* .video-player::-webkit-media-controls { display:none !important; } */
+
+/* ==========================================
+   Player Layout with Queue
+   ========================================== */
+
+.player-layout {
+  display: flex;
+  gap: var(--space-xl);
+  align-items: flex-start;
+}
+
+.player-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ==========================================
+   Queue Panel
+   ========================================== */
+
+.queue-panel {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+}
+
+.queue-header {
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+.queue-title {
+  font-size: 1.1rem;
+  margin-bottom: var(--space-xs);
+  color: var(--color-text);
+}
+
+.queue-module-name {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.queue-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: var(--space-sm);
+}
+
+.queue-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  transition: all var(--transition-fast);
+  margin-bottom: var(--space-xs);
+  text-decoration: none;
+}
+
+.queue-item:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text);
+}
+
+.queue-item.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.queue-item.active:hover {
+  background: var(--color-primary-hover);
+}
+
+.queue-item-number {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.queue-item.active .queue-item-number {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.queue-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-item-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: var(--space-xs);
+}
+
+.queue-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.queue-item-status {
+  font-size: 0.75rem;
+}
+
+.queue-item-status.status-completed {
+  color: var(--color-success);
+}
+
+.queue-item-status.status-in-progress {
+  color: var(--color-warning);
+}
+
+.queue-item-status.status-unwatched {
+  color: var(--color-text-muted);
+}
+
+.queue-item.active .queue-item-status {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.queue-item-playing {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================
+   Autoplay Countdown Overlay
+   ========================================== */
+
+.autoplay-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.autoplay-overlay.hidden {
+  display: none;
+}
+
+.autoplay-content {
+  text-align: center;
+  color: white;
+}
+
+.autoplay-countdown-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto var(--space-lg);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.autoplay-countdown-ring:hover {
+  transform: scale(1.05);
+}
+
+.autoplay-countdown-ring:hover .countdown-progress {
+  stroke: var(--color-primary-hover);
+}
+
+.autoplay-countdown-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.countdown-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 6;
+}
+
+.countdown-progress {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.countdown-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 0 20px rgba(124, 58, 237, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.autoplay-text {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.autoplay-next-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.autoplay-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: var(--space-sm) var(--space-xl);
+  font-size: 0.9rem;
+}
+
+.autoplay-cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Responsive: Queue below player on smaller screens */
+@media (max-width: 1024px) {
+  .player-layout {
+    flex-direction: column;
+  }
+
+  .queue-panel {
+    width: 100%;
+    position: static;
+    max-height: 400px;
+  }
+}
+
+/* Fullscreen autoplay overlay */
+:fullscreen .autoplay-overlay,
+:-webkit-full-screen .autoplay-overlay,
+:-moz-full-screen .autoplay-overlay {
+  position: fixed;
+}
