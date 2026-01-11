@@ -9,6 +9,9 @@
                 <!-- Video Player Section -->
                 <!-- Video Player Section -->
                 <section class="player-section">
+                    <h1 class="video-title">
+                        <%= video.title %>
+                    </h1>
                     <div class="video-wrapper">
                         <video id="videoPlayer" class="plyr" playsinline controls data-video-id="<%= video.id %>"
                             data-saved-position="<%= video.position %>">
@@ -41,9 +44,6 @@
 
                 <!-- Video Info Section -->
                 <section class="video-info-section">
-                    <h1 class="video-title">
-                        <%= video.title %>
-                    </h1>
 
                     <!-- Status Controls -->
                     <div class="status-controls">
