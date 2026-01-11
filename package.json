@@ -4,11 +4,11 @@
     "description": "A CLI tool and web interface for tracking progress in downloaded video courses",
     "main": "src/server.js",
     "bin": {
-        "coursewatcher": "./bin/coursewatcher.js"
+        "coursewatcher": "./src/cli.js"
     },
     "scripts": {
-        "start": "node bin/coursewatcher.js",
-        "dev": "node bin/coursewatcher.js",
+        "start": "node src/cli.js",
+        "dev": "node src/cli.js",
         "test": "jest",
         "test:coverage": "jest --coverage",
         "test:watch": "jest --watch"
@@ -34,7 +34,6 @@
         "url": "https://github.com/serhiishtokal/CourseWatcher/issues"
     },
     "files": [
-        "bin/",
         "src/",
         "views/",
         "public/"
