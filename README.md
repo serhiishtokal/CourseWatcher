@@ -20,6 +20,15 @@ npx coursewatcher
 npx coursewatcher --port 8080 --no-browser
 ```
 
+## CLI Options
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `[path]` | Path to course directory | `.` (Current directory) |
+| `-p, --port` | Port to run the server on | `3000` |
+| `--no-browser` | Prevent browser from opening automatically | `false` |
+
+
 ## Installation
 
 ```bash
