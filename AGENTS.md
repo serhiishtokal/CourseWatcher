@@ -12,14 +12,15 @@ progress tracking.
 ```bash
 npm install
 npm run dev
+npm run typecheck
+npm run build
 npm test
-npm test -- --runInBand
 ```
 
 CLI entrypoint:
 
 ```bash
-node src/cli.js [path] [--port <number>] [--no-browser]
+node dist/app/cli/main.js [path] [--port <number>] [--no-browser]
 ```
 
 Published package:
@@ -31,23 +32,22 @@ coursewatcher --version
 
 ## Architecture
 
-- `src/cli.js`: commander-based CLI entrypoint
-- `src/server.js`: Express app setup and server lifecycle
-- `src/controllers/`: route handlers and page rendering
-- `src/services/`: app business logic
-- `src/models/database.js`: SQLite setup and query helpers
-- `views/`: EJS pages, layouts, partials
-- `public/`: browser JS and CSS
-- `tests/unit/`: service and database tests
-- `tests/integration/`: HTTP/API and rendered-page tests
+- `src/app/cli/`: TypeScript CLI entrypoint and server bootstrap
+- `src/app/server/`: Express app wiring, API routes, and SPA hosting
+- `src/modules/`: vertical slices for `catalog`, `playback`, and `notes`
+- `src/platform/`: config, database, logging, and shared runtime concerns
+- `src/shared/contracts/`: shared API DTOs used by backend and React app
+- `web/src/`: Vite + React + TypeScript frontend, organized by feature
+- `tests/unit/`: TypeScript unit tests for database and slice services
+- `tests/integration/`: HTTP/API and SPA-shell integration tests
 
 ## Coding Guidelines
 
-- Match existing CommonJS style and 2-space indentation.
+- Match existing 2-space indentation.
 - Use single quotes and semicolons.
 - Keep changes surgical. Do not refactor unrelated code.
-- Put business rules in services/controllers, not templates.
-- Prefer small helpers over spreading conditionals across EJS.
+- Put business rules in slice services, not route handlers or React components.
+- Prefer small helpers over spreading conditionals across route components.
 - Add tests for behavior changes, especially playback/progress logic.
 
 ## Progress And Player Rules
@@ -65,10 +65,10 @@ coursewatcher --version
 - Run focused tests when changing progress/player logic:
 
 ```bash
-npm test -- --runInBand tests/unit/progress-service.test.js tests/integration/api.test.js
+npm test
 ```
 
-- Run full `npm test -- --runInBand` before finishing non-trivial changes.
+- Run `npm run typecheck`, `npm test`, and `npm run build` before finishing non-trivial changes.
 
 ## Release Notes
 

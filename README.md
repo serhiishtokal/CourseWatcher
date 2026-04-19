@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-**A CLI tool and web interface for tracking progress in downloaded video courses.**
+**A TypeScript CLI and React web app for tracking progress in downloaded video courses.**
 
 ## Quick Start
 
@@ -13,11 +13,12 @@
 # Navigate to your course folder
 cd /path/to/my-course
 
-# Run CourseWatcher
-npx coursewatcher
+# Build once, then run CourseWatcher
+npm run build
+node dist/app/cli/main.js
 
 # Or with options
-npx coursewatcher --port 8080 --no-browser
+node dist/app/cli/main.js --port 8080 --no-browser
 ```
 
 ## CLI Options
@@ -65,11 +66,13 @@ npm install -g coursewatcher
 # Install dependencies
 npm install
 
-# Run in development
+# Run the TypeScript CLI + Express server with Vite middleware
 npm run dev
 
-# Run tests
+# Typecheck, test, and build
+npm run typecheck
 npm test
+npm run build
 ```
 
 ## License
