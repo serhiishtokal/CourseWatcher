@@ -19,6 +19,7 @@ export function usePlaybackController(payload: PlayerPayload) {
   const playerHostRef = useRef<HTMLDivElement | null>(null);
   const mediaElementRef = useRef<HTMLVideoElement | null>(null);
   const playerRef = useRef<Plyr | null>(null);
+  const currentVideoIdRef = useRef(payload.video.id);
   const lastSavedPositionRef = useRef(payload.startPosition);
   const saveTimeoutRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
@@ -34,8 +35,9 @@ export function usePlaybackController(payload: PlayerPayload) {
     setStatus(payload.video.status);
     setNotesMessage('');
     setAutoplayCountdown(null);
+    currentVideoIdRef.current = payload.video.id;
     lastSavedPositionRef.current = payload.startPosition;
-  }, [payload]);
+  }, [payload.notes.content, payload.startPosition, payload.video.id, payload.video.status]);
 
   const persistStatus = useEffectEvent(async (nextStatus: VideoStatus) => {
     await updateVideoStatus(payload.video.id, nextStatus);
@@ -198,7 +200,7 @@ export function usePlaybackController(payload: PlayerPayload) {
         return;
       }
 
-      createProgressBeacon(payload.video.id, player.currentTime, player.duration);
+      createProgressBeacon(currentVideoIdRef.current, player.currentTime, player.duration);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -219,7 +221,7 @@ export function usePlaybackController(payload: PlayerPayload) {
       mediaElementRef.current = null;
       host.replaceChildren();
     };
-  }, [navigate, persistProgress, persistStatus, startAutoplay]);
+  }, []);
 
   useEffect(() => {
     const mediaElement = mediaElementRef.current;
@@ -245,7 +247,7 @@ export function usePlaybackController(payload: PlayerPayload) {
     return () => {
       mediaElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [cancelAutoplay, payload]);
+  }, [payload.startPosition, payload.video.id]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -270,7 +272,7 @@ export function usePlaybackController(payload: PlayerPayload) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [goToNextVideo, goToPreviousVideo]);
+  }, []);
 
   async function handleStatusChange(nextStatus: VideoStatus) {
     await persistStatus(nextStatus);
