@@ -2,6 +2,7 @@ import type { PlayerPayload, VideoStatus } from '@contracts/api';
 import Plyr from 'plyr';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { isEditableTarget } from './playback-keyboard';
 import {
   createProgressBeacon,
   saveVideoNotes,
@@ -14,12 +15,15 @@ const AUTOPLAY_COUNTDOWN_SECONDS = 5;
 
 export function usePlaybackController(payload: PlayerPayload) {
   const navigate = useNavigate();
+  const playerShellRef = useRef<HTMLDivElement | null>(null);
   const playerHostRef = useRef<HTMLDivElement | null>(null);
+  const mediaElementRef = useRef<HTMLVideoElement | null>(null);
   const playerRef = useRef<Plyr | null>(null);
   const lastSavedPositionRef = useRef(payload.startPosition);
   const saveTimeoutRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
 
+  const [isShellFullscreen, setIsShellFullscreen] = useState(false);
   const [notes, setNotes] = useState(payload.notes.content);
   const [status, setStatus] = useState(payload.video.status);
   const [notesMessage, setNotesMessage] = useState('');
@@ -67,6 +71,24 @@ export function usePlaybackController(payload: PlayerPayload) {
     setAutoplayCountdown(null);
   });
 
+  const goToPreviousVideo = useEffectEvent(() => {
+    if (!payload.adjacent.prev) {
+      return;
+    }
+
+    cancelAutoplay();
+    navigate(`/video/${payload.adjacent.prev}`);
+  });
+
+  const goToNextVideo = useEffectEvent(() => {
+    if (!payload.adjacent.next) {
+      return;
+    }
+
+    cancelAutoplay();
+    navigate(`/video/${payload.adjacent.next}`);
+  });
+
   const startAutoplay = useEffectEvent(() => {
     if (!payload.adjacent.next) {
       return;
@@ -94,22 +116,26 @@ export function usePlaybackController(payload: PlayerPayload) {
   });
 
   useEffect(() => {
+    const shell = playerShellRef.current;
     const host = playerHostRef.current;
-    if (!host) {
+    if (!shell || !host) {
       return undefined;
     }
-
-    cancelAutoplay();
-    host.innerHTML = '';
 
     const element = document.createElement('video');
     element.controls = true;
     element.playsInline = true;
     element.preload = 'metadata';
-    element.src = `/api/videos/${payload.video.id}/stream`;
-    host.appendChild(element);
+    host.replaceChildren(element);
+    mediaElementRef.current = element;
 
     const player = new Plyr(element, {
+      fullscreen: {
+        enabled: true,
+        fallback: true,
+        iosNative: false,
+        container: '.player-shell',
+      },
       keyboard: { focused: true, global: true },
       controls: [
         'play-large',
@@ -131,15 +157,15 @@ export function usePlaybackController(payload: PlayerPayload) {
     });
     playerRef.current = player;
 
-    const handleLoadedMetadata = () => {
-      if (payload.startPosition > 0) {
-        player.currentTime = payload.startPosition;
-      }
-
-      void Promise.resolve(player.play()).catch(() => undefined);
+    const syncFullscreenState = () => {
+      setIsShellFullscreen(
+        document.fullscreenElement === shell || shell.classList.contains('plyr--fullscreen-fallback'),
+      );
     };
 
-    element.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+    player.on('enterfullscreen', syncFullscreenState);
+    player.on('exitfullscreen', syncFullscreenState);
+    document.addEventListener('fullscreenchange', syncFullscreenState);
 
     player.on('pause', () => {
       void persistProgress();
@@ -178,7 +204,7 @@ export function usePlaybackController(payload: PlayerPayload) {
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      element.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      document.removeEventListener('fullscreenchange', syncFullscreenState);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       if (saveTimeoutRef.current !== null) {
         window.clearTimeout(saveTimeoutRef.current);
@@ -190,9 +216,61 @@ export function usePlaybackController(payload: PlayerPayload) {
       }
       player.destroy();
       playerRef.current = null;
-      host.innerHTML = '';
+      mediaElementRef.current = null;
+      host.replaceChildren();
     };
-  }, [cancelAutoplay, navigate, payload, persistProgress, persistStatus, startAutoplay]);
+  }, [navigate, persistProgress, persistStatus, startAutoplay]);
+
+  useEffect(() => {
+    const mediaElement = mediaElementRef.current;
+    if (!mediaElement) {
+      return;
+    }
+
+    cancelAutoplay();
+
+    const handleLoadedMetadata = () => {
+      if (payload.startPosition > 0) {
+        mediaElement.currentTime = payload.startPosition;
+      }
+
+      void Promise.resolve(mediaElement.play()).catch(() => undefined);
+    };
+
+    mediaElement.pause();
+    mediaElement.src = `/api/videos/${payload.video.id}/stream`;
+    mediaElement.load();
+    mediaElement.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+
+    return () => {
+      mediaElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
+  }, [cancelAutoplay, payload]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.shiftKey || isEditableTarget(event.target)) {
+        return;
+      }
+
+      const normalizedKey = event.key.toLowerCase();
+
+      if (normalizedKey === 'p') {
+        event.preventDefault();
+        goToPreviousVideo();
+      }
+
+      if (normalizedKey === 'n') {
+        event.preventDefault();
+        goToNextVideo();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [goToNextVideo, goToPreviousVideo]);
 
   async function handleStatusChange(nextStatus: VideoStatus) {
     await persistStatus(nextStatus);
@@ -204,12 +282,18 @@ export function usePlaybackController(payload: PlayerPayload) {
 
   return {
     autoplayCountdown,
+    canGoNext: payload.adjacent.next !== null,
+    canGoPrevious: payload.adjacent.prev !== null,
     cancelAutoplay,
+    goToNextVideo,
+    goToPreviousVideo,
     handleNotesSave,
     handleStatusChange,
+    isShellFullscreen,
     notes,
     notesMessage,
     playerHostRef,
+    playerShellRef,
     setNotes,
     status,
   };

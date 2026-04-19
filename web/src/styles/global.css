@@ -397,6 +397,10 @@ textarea {
   padding: 1.25rem;
 }
 
+.player-shell {
+  position: relative;
+}
+
 .player-frame {
   position: relative;
   overflow: hidden;
@@ -414,6 +418,88 @@ textarea {
 .player-host video,
 .player-host .plyr {
   width: 100%;
+}
+
+.fullscreen-nav {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  z-index: 4;
+}
+
+.fullscreen-nav.visible {
+  opacity: 1;
+}
+
+.fullscreen-nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 6.25rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(12, 14, 17, 0.58);
+  color: white;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
+}
+
+.fullscreen-nav-button.previous {
+  left: 1.25rem;
+}
+
+.fullscreen-nav-button.next {
+  right: 1.25rem;
+}
+
+.fullscreen-nav-button:hover,
+.fullscreen-nav-button:focus-visible {
+  background: rgba(124, 58, 237, 0.84);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.fullscreen-nav-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.fullscreen-nav-label {
+  font-weight: 700;
+}
+
+.player-shell:fullscreen,
+.player-shell.plyr--fullscreen-fallback {
+  background: #000;
+}
+
+.player-shell:fullscreen .player-frame,
+.player-shell.plyr--fullscreen-fallback .player-frame {
+  border: none;
+  border-radius: 0;
+  background: #000;
+}
+
+.player-shell:fullscreen .player-host,
+.player-shell:fullscreen .player-host video,
+.player-shell:fullscreen .player-host .plyr,
+.player-shell:fullscreen .player-host .plyr__video-wrapper,
+.player-shell.plyr--fullscreen-fallback .player-host,
+.player-shell.plyr--fullscreen-fallback .player-host video,
+.player-shell.plyr--fullscreen-fallback .player-host .plyr,
+.player-shell.plyr--fullscreen-fallback .player-host .plyr__video-wrapper {
+  height: 100%;
+}
+
+.player-shell:fullscreen .player-frame,
+.player-shell.plyr--fullscreen-fallback .player-frame {
+  height: 100vh;
 }
 
 .status-panel,
@@ -532,6 +618,12 @@ textarea {
   .player-layout {
     grid-template-columns: 1fr;
   }
+
+  .fullscreen-nav-button {
+    top: auto;
+    bottom: 5.5rem;
+    transform: none;
+  }
 }
 
 @media (max-width: 760px) {
@@ -547,5 +639,14 @@ textarea {
 
   .controls-cluster {
     justify-content: flex-start;
+  }
+
+  .fullscreen-nav-button {
+    min-width: 0;
+    padding-inline: 0.95rem;
+  }
+
+  .fullscreen-nav-label {
+    display: none;
   }
 }

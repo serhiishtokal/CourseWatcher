@@ -51,21 +51,49 @@ export function PlaybackRoute() {
           <span className={`status-badge status-${controller.status}`}>{controller.status}</span>
         </div>
 
-        <div className="player-frame">
-          <div className="player-host" ref={controller.playerHostRef} />
+        <div className="player-shell" ref={controller.playerShellRef}>
+          <div className={controller.isShellFullscreen ? 'fullscreen-nav visible' : 'fullscreen-nav'} aria-hidden={!controller.isShellFullscreen}>
+            {controller.canGoPrevious ? (
+              <button
+                aria-label="Previous video"
+                className="fullscreen-nav-button previous"
+                onClick={() => controller.goToPreviousVideo()}
+                type="button"
+              >
+                <span className="fullscreen-nav-icon">←</span>
+                <span className="fullscreen-nav-label">Prev</span>
+              </button>
+            ) : null}
 
-          {controller.autoplayCountdown !== null && nextVideo ? (
-            <div className="overlay-card">
-              <strong>Up next in {controller.autoplayCountdown}s</strong>
-              <span>{nextVideo.title}</span>
-              <div className="notes-actions">
-                <button onClick={() => controller.cancelAutoplay()} type="button">
-                  Cancel
-                </button>
-                <Link to={`/video/${nextVideo.id}`}>Play now</Link>
+            {controller.canGoNext ? (
+              <button
+                aria-label="Next video"
+                className="fullscreen-nav-button next"
+                onClick={() => controller.goToNextVideo()}
+                type="button"
+              >
+                <span className="fullscreen-nav-label">Next</span>
+                <span className="fullscreen-nav-icon">→</span>
+              </button>
+            ) : null}
+          </div>
+
+          <div className="player-frame">
+            <div className="player-host" ref={controller.playerHostRef} />
+
+            {controller.autoplayCountdown !== null && nextVideo ? (
+              <div className="overlay-card">
+                <strong>Up next in {controller.autoplayCountdown}s</strong>
+                <span>{nextVideo.title}</span>
+                <div className="notes-actions">
+                  <button onClick={() => controller.cancelAutoplay()} type="button">
+                    Cancel
+                  </button>
+                  <Link to={`/video/${nextVideo.id}`}>Play now</Link>
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
 
         <div className="player-nav">
