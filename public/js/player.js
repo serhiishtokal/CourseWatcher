@@ -31,11 +31,11 @@
     if (!videoElement) return;
 
     const videoId = videoElement.dataset.videoId;
-    const savedPosition = parseFloat(videoElement.dataset.savedPosition) || 0;
+    const startPosition = parseFloat(videoElement.dataset.startPosition) || 0;
     const nextVideoUrl = videoElement.dataset.nextVideoUrl;
 
     let saveTimeout = null;
-    let lastSavedPosition = savedPosition;
+    let lastSavedPosition = startPosition;
     let autoplayInterval = null;
     let autoplayCountdown = AUTOPLAY_COUNTDOWN;
 
@@ -69,8 +69,8 @@
 
         // Restore saved position and autoplay
         player.on('ready', () => {
-            if (savedPosition > 0) {
-                player.currentTime = savedPosition;
+            if (startPosition > 0) {
+                player.currentTime = startPosition;
             }
 
             // Always try to autoplay

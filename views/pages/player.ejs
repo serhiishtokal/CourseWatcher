@@ -16,7 +16,7 @@
                             </h1>
                             <div class="video-wrapper">
                                 <video id="videoPlayer" class="plyr" playsinline controls
-                                    data-video-id="<%= video.id %>" data-saved-position="<%= video.position %>"
+                                    data-video-id="<%= video.id %>" data-start-position="<%= startPosition %>"
                                     data-next-video-url="<%= adjacent.next ? '/video/' + adjacent.next : '' %>">
                                     <source src="/api/videos/<%= video.id %>/stream" type="video/mp4">
                                     Your browser does not support the video tag.

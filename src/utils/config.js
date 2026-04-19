@@ -19,6 +19,7 @@ const config = {
     // Video settings
     videoExtensions: ['.mp4', '.webm', '.ogv', '.ogg'],
     completionThreshold: 0.9, // 90% watched = completed
+    shortVideoResumeCutoffSeconds: 300,
 
     // Playback settings
     defaultPlaybackSpeed: 1.0,

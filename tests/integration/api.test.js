@@ -19,6 +19,7 @@ describe('API Endpoints', () => {
     let db;
     let app;
     let testVideoId;
+    let secondVideoId;
 
     beforeEach(() => {
         // Create temp directory with video files
@@ -36,8 +37,9 @@ describe('API Endpoints', () => {
 
         // Scan videos
         videoService.scanVideos();
-        const video = db.get('SELECT id FROM videos LIMIT 1');
-        testVideoId = video.id;
+        const videos = db.all('SELECT id FROM videos ORDER BY id');
+        testVideoId = videos[0].id;
+        secondVideoId = videos[1].id;
 
         // Create Express app
         app = express();
@@ -71,6 +73,44 @@ describe('API Endpoints', () => {
             expect(res.body.total).toBe(2);
             expect(res.body.completed).toBe(0);
             expect(res.body.percentComplete).toBe(0);
+        });
+    });
+
+    describe('GET /video/:id', () => {
+        test('should start completed videos from the beginning', async () => {
+            db.run(
+                'UPDATE videos SET position = ?, duration = ?, status = ? WHERE id = ?',
+                [540, 600, 'completed', testVideoId]
+            );
+
+            const res = await request(app).get(`/video/${testVideoId}`);
+
+            expect(res.status).toBe(200);
+            expect(res.text).toContain('data-start-position="0"');
+        });
+
+        test('should start short in-progress videos from the beginning', async () => {
+            db.run(
+                'UPDATE videos SET position = ?, duration = ?, status = ? WHERE id = ?',
+                [120, 240, 'in-progress', testVideoId]
+            );
+
+            const res = await request(app).get(`/video/${testVideoId}`);
+
+            expect(res.status).toBe(200);
+            expect(res.text).toContain('data-start-position="0"');
+        });
+
+        test('should resume long in-progress videos from saved position', async () => {
+            db.run(
+                'UPDATE videos SET position = ?, duration = ?, status = ? WHERE id = ?',
+                [120, 600, 'in-progress', secondVideoId]
+            );
+
+            const res = await request(app).get(`/video/${secondVideoId}`);
+
+            expect(res.status).toBe(200);
+            expect(res.text).toContain('data-start-position="120"');
         });
     });
 

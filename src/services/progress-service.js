@@ -42,7 +42,12 @@ class ProgressService {
 
         // Determine new status based on position
         let newStatus = video.status;
-        const videoDuration = duration || video.duration;
+        const videoDuration = typeof duration === 'number' && !Number.isNaN(duration)
+            ? duration
+            : video.duration;
+        const isShortVideo = videoDuration > 0
+            && videoDuration < config.shortVideoResumeCutoffSeconds;
+        const completionPosition = videoDuration * config.completionThreshold;
 
         if (videoDuration > 0) {
             const watchPercent = position / videoDuration;
@@ -56,6 +61,22 @@ class ProgressService {
             newStatus = 'in-progress';
         }
 
+        const shouldPreserveCompletedProgress = video.status === 'completed'
+            && videoDuration > 0
+            && position < completionPosition;
+
+        if (shouldPreserveCompletedProgress) {
+            newStatus = 'completed';
+        }
+
+        let newPosition = position;
+
+        if (shouldPreserveCompletedProgress) {
+            newPosition = video.position;
+        } else if (isShortVideo && newStatus !== 'completed') {
+            newPosition = 0;
+        }
+
         // Update database
         this._db.run(
             `UPDATE videos 
@@ -64,7 +85,7 @@ class ProgressService {
            status = ?,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
-            [position, duration, newStatus, videoId]
+            [newPosition, duration, newStatus, videoId]
         );
 
         return this._db.get('SELECT * FROM videos WHERE id = ?', [videoId]);

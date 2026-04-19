@@ -8,7 +8,19 @@
 
 const path = require('path');
 const express = require('express');
+const { config } = require('../utils/config');
 const { NotFoundError } = require('../utils/errors');
+
+function getPlaybackStartPosition(video) {
+    const isShortVideo = video.duration > 0
+        && video.duration < config.shortVideoResumeCutoffSeconds;
+
+    if (video.status === 'completed' || isShortVideo) {
+        return 0;
+    }
+
+    return video.status === 'in-progress' ? video.position : 0;
+}
 
 /**
  * Create video routes
@@ -49,6 +61,7 @@ function createVideoRoutes(services) {
             const adjacent = videoService.getAdjacentVideos(videoId);
             const notes = notesService.getNotes(videoId);
             const queue = videoService.getQueueVideos(videoId);
+            const startPosition = getPlaybackStartPosition(video);
 
             res.render('pages/player', {
                 title: video.title,
@@ -56,6 +69,7 @@ function createVideoRoutes(services) {
                 adjacent,
                 notes,
                 queue,
+                startPosition,
             });
         } catch (err) {
             next(err);

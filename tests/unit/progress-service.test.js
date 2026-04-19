@@ -61,6 +61,37 @@ describe('ProgressService', () => {
             expect(result.status).toBe('completed');
         });
 
+        test('should keep completed status when rewatching from low position', () => {
+            progressService.updatePosition(testVideoId, 540, 600);
+
+            const result = progressService.updatePosition(testVideoId, 30, 600);
+
+            expect(result.status).toBe('completed');
+        });
+
+        test('should preserve completed position when rewatching from low position', () => {
+            progressService.updatePosition(testVideoId, 540, 600);
+
+            const result = progressService.updatePosition(testVideoId, 30, 600);
+
+            expect(result.position).toBe(540);
+        });
+
+        test('should not persist position for short videos below completion threshold', () => {
+            const result = progressService.updatePosition(testVideoId, 30, 240);
+
+            expect(result.status).toBe('in-progress');
+            expect(result.position).toBe(0);
+            expect(result.duration).toBe(240);
+        });
+
+        test('should still mark short videos as completed', () => {
+            const result = progressService.updatePosition(testVideoId, 216, 240);
+
+            expect(result.status).toBe('completed');
+            expect(result.position).toBe(216);
+        });
+
         test('should throw ValidationError for negative position', () => {
             expect(() => progressService.updatePosition(testVideoId, -10)).toThrow();
         });
