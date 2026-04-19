@@ -54,27 +54,31 @@ export function PlaybackRoute() {
         <div className="player-shell" ref={controller.playerShellRef}>
           <div className={controller.isShellFullscreen ? 'fullscreen-nav visible' : 'fullscreen-nav'} aria-hidden={!controller.isShellFullscreen}>
             {controller.canGoPrevious ? (
-              <button
-                aria-label="Previous video"
-                className="fullscreen-nav-button previous"
-                onClick={() => controller.goToPreviousVideo()}
-                type="button"
-              >
-                <span className="fullscreen-nav-icon">←</span>
-                <span className="fullscreen-nav-label">Prev</span>
-              </button>
+              <div className="fullscreen-nav-zone previous">
+                <button
+                  aria-label="Previous video"
+                  className="fullscreen-nav-button previous"
+                  onClick={() => controller.goToPreviousVideo()}
+                  type="button"
+                >
+                  <span className="fullscreen-nav-icon">←</span>
+                  <span className="fullscreen-nav-label">Prev</span>
+                </button>
+              </div>
             ) : null}
 
             {controller.canGoNext ? (
-              <button
-                aria-label="Next video"
-                className="fullscreen-nav-button next"
-                onClick={() => controller.goToNextVideo()}
-                type="button"
-              >
-                <span className="fullscreen-nav-label">Next</span>
-                <span className="fullscreen-nav-icon">→</span>
-              </button>
+              <div className="fullscreen-nav-zone next">
+                <button
+                  aria-label="Next video"
+                  className="fullscreen-nav-button next"
+                  onClick={() => controller.goToNextVideo()}
+                  type="button"
+                >
+                  <span className="fullscreen-nav-label">Next</span>
+                  <span className="fullscreen-nav-icon">→</span>
+                </button>
+              </div>
             ) : null}
           </div>
 
